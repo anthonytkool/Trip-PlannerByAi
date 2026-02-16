@@ -13,8 +13,9 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.error("❌ MongoDB Error:", err));
 
-// Schema
+// Schema - Added 'source' to the database so your history stays accurate
 const tripSchema = new mongoose.Schema({
+    source: String,
     destination: String,
     days: Number,
     budget: String,
@@ -36,38 +37,43 @@ const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 // Route: Generate Trip
 app.post('/api/generate-trip', async(req, res) => {
-    const { destination, days, budget, interests } = req.body;
+    // 1. UPDATED: Destructuring 'source' from request body
+    const { source, destination, days, budget, interests } = req.body;
 
     try {
-        // 🧠 SMART CURRENCY & TRANSPORT PROMPT
+        // 2. POWER PROMPT: Added Source logic and Nearest Hub instructions
         const prompt = `
-            Plan a ${days}-day trip to ${destination} with a ${budget} budget. Interests: ${interests}.
+            Plan a ${days}-day trip FROM ${source} TO ${destination} with a ${budget} budget. 
+            Interests: ${interests}.
             
             IMPORTANT INSTRUCTIONS:
-            1. **CURRENCY LOGIC**: 
-               - Detect the country of "${destination}".
-               - If it is inside INDIA, show ALL costs in Indian Rupees (Example: ₹5,000).
-               - If it is OUTSIDE India, show ALL costs in USD (Example: $100).
+            1. **TRANSPORT LOGIC**: 
+               - Calculate all travel options specifically starting FROM ${source} TO ${destination}.
+               - NEAREST HUB RULE: If ${destination} does not have its own airport or railway station (e.g., Dandeli), find the NEAREST major hub (airport/station) and include the taxi or bus connection from that hub to ${destination}.
+               - Provide approximate ticket costs for each mode.
+
+            2. **CURRENCY LOGIC**: 
+               - If ${source} and ${destination} are in INDIA, show ALL costs in Indian Rupees (₹).
+               - If either is outside India, show ALL costs in USD ($).
             
-            2. **TRANSPORT LOGIC**: 
-               - If ${destination} has no commercial airport, DO NOT suggest Flights.
-               - If no train station, DO NOT suggest Trains.
-            
-            3. Output PURE JSON only.
+            3. **BUDGET ACCURACY**:
+               - The "total_estimated_cost" MUST include the transport cost from ${source} to ${destination} and back.
+
+            4. Output PURE JSON only.
             
             STRICT JSON STRUCTURE:
             {
               "trip_name": "Creative Trip Title",
-              "total_estimated_cost": "Total Cost (e.g., ₹15,000 - ₹20,000 OR $500 - $700)",
+              "total_estimated_cost": "Total Trip Cost (e.g., ₹20,000 - ₹25,000)",
               "weather_tip": "Short weather advice",
               
               "travel_options": [
                 { 
                   "type": "Flight/Train/Bus/Cab", 
-                  "route": "Origin -> Destination", 
-                  "duration": "Duration", 
-                  "estimated_cost": "Cost (in ₹ or $)", 
-                  "booking_link": "https://www.google.com/search?q=travel+to+${destination}"
+                  "route": "Detailed path (e.g., ${source} -> Nearest Hub -> ${destination})", 
+                  "duration": "Total travel time", 
+                  "estimated_cost": "Cost (₹ or $)", 
+                  "booking_link": "https://www.google.com/search?q=travel+from+${source}+to+${destination}"
                 }
               ],
               
@@ -95,6 +101,7 @@ app.post('/api/generate-trip', async(req, res) => {
         const tripData = JSON.parse(text);
 
         const newTrip = new Trip({
+            source, // Saved source
             destination,
             days,
             budget,

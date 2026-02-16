@@ -1,4 +1,4 @@
-import { Plane, Loader2, Sparkles } from 'lucide-react';
+import { Plane, Loader2, Sparkles, MapPin } from 'lucide-react';
 
 const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
   
@@ -40,6 +40,21 @@ const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
         
         {/* Left Side: Inputs */}
         <div className="space-y-6">
+          
+          {/* NEW: Starting Location (Source) */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70 flex items-center gap-1">
+              Starting From <MapPin className="w-3 h-3 text-indigo-500" />
+            </label>
+            <input 
+              className="w-full bg-white/50 border border-white/60 p-4 rounded-2xl font-bold text-gray-800 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-400 backdrop-blur-sm" 
+              placeholder="e.g. Mumbai, New York..." 
+              value={formData.source}
+              onChange={e => setFormData({...formData, source: e.target.value})} 
+              required 
+            />
+          </div>
+
           {/* Destination */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70">Where to?</label>
@@ -53,7 +68,7 @@ const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
           </div>
           
           <div className="flex gap-4">
-             {/* Days */}
+              {/* Days */}
             <div className="space-y-2 w-1/2">
               <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70">Duration</label>
               <input 
@@ -74,7 +89,7 @@ const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
                 value={formData.budget}
                 onChange={e => setFormData({...formData, budget: e.target.value})}
               >
-                <option value="Medium">Moderate Budjet</option>
+                <option value="Medium">Moderate Budget</option>
                 <option value="Cheap">Low Budget</option>
                 <option value="Luxury">Luxury Budget</option>
               </select>
@@ -110,7 +125,7 @@ const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
             })}
           </div>
 
-          {/* Hidden text input for manual typing if needed (Optional) */}
+          {/* Hidden text input for manual typing if needed */}
            <input 
             className="w-full bg-transparent border-b border-gray-300/50 p-2 text-sm text-gray-600 focus:border-indigo-500 outline-none mt-2 placeholder:text-gray-400/70" 
             placeholder="+ Add custom interest..." 

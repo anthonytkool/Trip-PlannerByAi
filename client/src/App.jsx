@@ -13,7 +13,15 @@ function App() {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const UNSPLASH_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
 
-  const [formData, setFormData] = useState({ destination: '', days: '', budget: 'Moderate Budget', interests: '' });
+  // 1. UPDATED STATE: Added 'source'
+  const [formData, setFormData] = useState({ 
+    source: '', 
+    destination: '', 
+    days: '', 
+    budget: 'Moderate Budget', 
+    interests: '' 
+  });
+  
   const [trip, setTrip] = useState(null);
   const [history, setHistory] = useState([]);
   const [view, setView] = useState('home');
@@ -22,7 +30,6 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedPlan, setEditedPlan] = useState([]);
   
-  // 🏔️ Cinematic Fallback Image
   const STATIC_IMAGE = "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop";
   const [bgImage, setBgImage] = useState(STATIC_IMAGE);
 
@@ -39,7 +46,6 @@ function App() {
         },
         headers: { Authorization: `Client-ID ${UNSPLASH_KEY}` }
       });
-      // Using 'regular' instead of 'full' for faster, more reliable loading
       return response.data.results[0]?.urls?.regular || STATIC_IMAGE;
     } catch (error) {
       return STATIC_IMAGE;
@@ -57,6 +63,7 @@ function App() {
     setBgImage(newBg);
 
     try {
+      // 2. UPDATED LOGIC: Sending the new formData (including source) to the backend
       const res = await axios.post(`${API_URL}/api/generate-trip`, formData);
       setTrip(res.data);
     } catch (error) {
@@ -118,15 +125,16 @@ function App() {
   return (
     <div className="min-h-screen relative font-sans selection:bg-indigo-500 selection:text-white">
       
-      {/* 🚀 Loading Overlay */}
+      {/* 🚀 3. UPDATED LOADING OVERLAY: Shows both locations while loading */}
       {loading && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col justify-center items-center text-white">
            <Plane className="w-20 h-20 text-white animate-bounce" />
-           <h2 className="text-3xl font-bold mt-8">Designing your dream trip to {formData.destination}...</h2>
+           <h2 className="text-3xl font-bold mt-8 text-center px-4">
+             Designing your dream trip from {formData.source} to {formData.destination}...
+           </h2>
         </div>
       )}
 
-      {/* 🖼️ BEAUTIFIED BACKGROUND STACK */}
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-black/20 z-20"></div>
@@ -137,7 +145,6 @@ function App() {
         />
       </div>
 
-      {/* Main Content Container */}
       <div className="relative z-30 max-w-5xl mx-auto px-6 pt-10 pb-20">
         <Navbar view={view} setView={setView} fetchHistory={fetchHistory} />
         
@@ -154,12 +161,11 @@ function App() {
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">wander next?</span>
                 </h1>
                 <p className="text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed">
-                  Enter a destination and let AI curate your perfect adventure in seconds.
+                  Enter your route and let AI curate your perfect adventure in seconds.
                 </p>
               </div>
             )}
             
-            {/* Form Logic */}
             <TripForm formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} loading={loading} />
             
             {error && (
