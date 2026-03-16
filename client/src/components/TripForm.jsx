@@ -1,109 +1,130 @@
-import { Plane, Loader2, Sparkles, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plane, Loader2, Sparkles, MapPin, Navigation, Calendar, Wallet } from 'lucide-react';
 
 const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
   
-  // ✨ The Pre-defined interests with Emojis
   const interestOptions = [
-    { id: "Food", label: "Foodie 🍜", color: "from-orange-400 to-red-500" },
-    { id: "History", label: "History 🏛️", color: "from-amber-700 to-orange-600" },
-    { id: "Nature", label: "Nature 🌿", color: "from-green-400 to-emerald-600" },
-    { id: "Adventure", label: "Adventure 🧗", color: "from-blue-500 to-indigo-600" },
-    { id: "Relaxation", label: "Relax 🧖‍♀️", color: "from-pink-300 to-rose-400" },
-    { id: "Nightlife", label: "Party 🍸", color: "from-purple-500 to-violet-600" },
+    { id: "Food", label: "Foodie 🍜", color: "from-orange-400 to-red-500", shadow: "shadow-orange-500/40" },
+    { id: "History", label: "History 🏛️", color: "from-amber-700 to-orange-600", shadow: "shadow-amber-500/40" },
+    { id: "Nature", label: "Nature 🌿", color: "from-green-400 to-emerald-600", shadow: "shadow-emerald-500/40" },
+    { id: "Adventure", label: "Adventure 🧗", color: "from-blue-500 to-indigo-600", shadow: "shadow-blue-500/40" },
+    { id: "Relaxation", label: "Relax 🧖‍♀️", color: "from-pink-400 to-rose-500", shadow: "shadow-pink-500/40" },
+    { id: "Nightlife", label: "Party 🍸", color: "from-purple-500 to-violet-600", shadow: "shadow-purple-500/40" },
   ];
 
-  // ✨ Toggle Logic (Adds/Removes interests from the string)
   const toggleInterest = (interest) => {
     let currentInterests = formData.interests ? formData.interests.split(', ') : [];
-    
-    // Clean up empty strings
     currentInterests = currentInterests.filter(i => i !== "");
-
     if (currentInterests.includes(interest)) {
-      // Remove if already there
       currentInterests = currentInterests.filter(i => i !== interest);
     } else {
-      // Add if new
       currentInterests.push(interest);
     }
-    
     setFormData({ ...formData, interests: currentInterests.join(', ') });
   };
 
   return (
-    <div className="glass-panel p-8 rounded-[2rem] mb-12 transform transition-all duration-500 hover:shadow-2xl border border-white/40 relative overflow-hidden">
-      
-      {/* Decorative Glow */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      // 🔥 FIX: Forced dark mode background, reduced padding (p-6) so it fits on screen
+      className="relative p-6 sm:p-8 bg-[#0a0f1c]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden w-full"
+    >
+      {/* Aesthetic Top Inner Glow */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+      {/* 🔥 FIX: Reduced gaps to make form more compact */}
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 relative z-10">
         
-        {/* Left Side: Inputs */}
-        <div className="space-y-6">
+        {/* LEFT SIDE: Inputs */}
+        <div className="space-y-4">
           
-          {/* NEW: Starting Location (Source) */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70 flex items-center gap-1">
-              Starting From <MapPin className="w-3 h-3 text-indigo-500" />
+          {/* Origin */}
+          <div className="space-y-1.5 group">
+            <label className="text-[10px] font-black text-cyan-400 tracking-widest uppercase ml-1 opacity-90 flex items-center gap-1.5">
+              Origin
             </label>
-            <input 
-              className="w-full bg-white/50 border border-white/60 p-4 rounded-2xl font-bold text-gray-800 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-400 backdrop-blur-sm" 
-              placeholder="e.g. Mumbai, New York..." 
-              value={formData.source}
-              onChange={e => setFormData({...formData, source: e.target.value})} 
-              required 
-            />
-          </div>
-
-          {/* Destination */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70">Where to?</label>
-            <input 
-              className="w-full bg-white/50 border border-white/60 p-4 rounded-2xl font-bold text-gray-800 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-400 backdrop-blur-sm" 
-              placeholder="e.g. Tokyo, Paris..." 
-              value={formData.destination}
-              onChange={e => setFormData({...formData, destination: e.target.value})} 
-              required 
-            />
-          </div>
-          
-          <div className="flex gap-4">
-              {/* Days */}
-            <div className="space-y-2 w-1/2">
-              <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70">Duration</label>
+            <div className="relative">
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-cyan-400 transition-colors" />
+              {/* 🔥 FIX: Reduced padding (py-3) and text-sm to stop cut-offs */}
               <input 
-                type="number" 
-                className="w-full bg-white/50 border border-white/60 p-4 rounded-2xl font-bold text-gray-800 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all backdrop-blur-sm" 
-                placeholder="3" 
-                value={formData.days}
-                onChange={e => setFormData({...formData, days: e.target.value})} 
+                className="w-full bg-black/40 border border-white/10 pl-10 pr-3 py-3 rounded-xl text-sm font-medium text-white focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all placeholder:text-gray-500 shadow-inner" 
+                placeholder="Where from?" 
+                value={formData.source}
+                onChange={e => setFormData({...formData, source: e.target.value})} 
                 required 
               />
             </div>
+          </div>
+
+          {/* Destination */}
+          <div className="space-y-1.5 group">
+            <label className="text-[10px] font-black text-cyan-400 tracking-widest uppercase ml-1 opacity-90 flex items-center gap-1.5">
+              Destination
+            </label>
+            <div className="relative">
+              <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-400 transition-colors" />
+              <input 
+                className="w-full bg-black/40 border border-white/10 pl-10 pr-3 py-3 rounded-xl text-sm font-medium text-white focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none transition-all placeholder:text-gray-500 shadow-inner" 
+                placeholder="Where to?" 
+                value={formData.destination}
+                onChange={e => setFormData({...formData, destination: e.target.value})} 
+                required 
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+            {/* Days */}
+            <div className="space-y-1.5 w-1/3 group">
+              <label className="text-[10px] font-black text-cyan-400 tracking-widest uppercase ml-1 opacity-90 flex items-center gap-1.5">
+                Days
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-cyan-400 transition-colors" />
+                <input 
+                  type="number" 
+                  min="1"
+                  max="30"
+                  className="w-full bg-black/40 border border-white/10 pl-9 pr-2 py-3 rounded-xl text-sm font-medium text-white focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all placeholder:text-gray-500 shadow-inner" 
+                  placeholder="Count" 
+                  value={formData.days}
+                  onChange={e => setFormData({...formData, days: e.target.value})} 
+                  required 
+                />
+              </div>
+            </div>
 
             {/* Budget */}
-            <div className="space-y-2 w-1/2">
-              <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70">Budget</label>
-              <select 
-                className="w-full bg-white/50 border border-white/60 p-4 rounded-2xl font-bold text-gray-800 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all cursor-pointer appearance-none backdrop-blur-sm" 
-                value={formData.budget}
-                onChange={e => setFormData({...formData, budget: e.target.value})}
-              >
-                <option value="Medium">Moderate Budget</option>
-                <option value="Cheap">Low Budget</option>
-                <option value="Luxury">Luxury Budget</option>
-              </select>
+            <div className="space-y-1.5 w-2/3 group">
+              <label className="text-[10px] font-black text-cyan-400 tracking-widest uppercase ml-1 opacity-90 flex items-center gap-1.5">
+                Budget
+              </label>
+              <div className="relative">
+                <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-cyan-400 transition-colors pointer-events-none" />
+                <select 
+                  className="w-full bg-black/40 border border-white/10 pl-9 pr-6 py-3 rounded-xl text-sm font-medium text-white focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all cursor-pointer appearance-none shadow-inner truncate" 
+                  value={formData.budget}
+                  onChange={e => setFormData({...formData, budget: e.target.value})}
+                >
+                  <option value="Medium" className="text-gray-900">Moderate</option>
+                  <option value="Cheap" className="text-gray-900">Budget</option>
+                  <option value="Luxury" className="text-gray-900">Luxury</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Smart Tags */}
+        {/* RIGHT SIDE: Smart Tags */}
         <div className="space-y-3">
-          <label className="text-xs font-bold text-indigo-900 tracking-wider uppercase ml-1 opacity-70 flex items-center gap-2">
-            Select Interests <Sparkles className="w-3 h-3 text-yellow-500" />
+          <label className="text-[10px] font-black text-cyan-400 tracking-widest uppercase ml-1 opacity-90 flex items-center gap-1.5">
+            Trip Vibe <Sparkles className="w-3 h-3 text-yellow-400" />
           </label>
           
-          <div className="flex flex-wrap gap-3 content-start">
+          <div className="flex flex-wrap gap-2.5 content-start">
             {interestOptions.map((opt) => {
               const isSelected = formData.interests.includes(opt.id);
               return (
@@ -112,10 +133,10 @@ const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
                   type="button"
                   onClick={() => toggleInterest(opt.id)}
                   className={`
-                    relative px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 border
+                    relative px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 border
                     ${isSelected 
-                      ? `bg-gradient-to-r ${opt.color} text-white shadow-lg border-transparent translate-y-[-2px]` 
-                      : "bg-white/40 text-gray-600 border-white/50 hover:bg-white/60"
+                      ? `bg-gradient-to-br ${opt.color} text-white border-transparent ${opt.shadow} shadow-md translate-y-[-2px]` 
+                      : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white"
                     }
                   `}
                 >
@@ -125,31 +146,40 @@ const TripForm = ({ formData, setFormData, handleSubmit, loading }) => {
             })}
           </div>
 
-          {/* Hidden text input for manual typing if needed */}
-           <input 
-            className="w-full bg-transparent border-b border-gray-300/50 p-2 text-sm text-gray-600 focus:border-indigo-500 outline-none mt-2 placeholder:text-gray-400/70" 
-            placeholder="+ Add custom interest..." 
-            onChange={e => toggleInterest(e.target.value)} 
-          />
+          <div className="mt-2 relative group">
+             <input 
+              className="w-full bg-transparent border-b border-white/10 p-2 text-xs text-white focus:border-cyan-400 outline-none transition-all placeholder:text-gray-500 font-medium" 
+              placeholder="+ Add custom interest..." 
+              onChange={e => toggleInterest(e.target.value)} 
+            />
+          </div>
         </div>
 
-        {/* Full Width Submit */}
+        {/* 🔥 FIX: Shorter button height (h-[54px]) so it fits on screen */}
         <button 
           type="submit" 
           disabled={loading} 
-          className="col-span-1 md:col-span-2 h-[64px] bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] animate-gradient text-white text-lg rounded-2xl font-bold shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all transform hover:-translate-y-1 active:scale-95 flex justify-center items-center gap-3 mt-4"
-          style={{ backgroundSize: '200% auto' }}
+          className="col-span-1 md:col-span-2 mt-4 h-[54px] relative group overflow-hidden rounded-xl font-bold text-base text-white shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-all transform hover:-translate-y-0.5 active:scale-[0.98]"
         >
-          {loading ? (
-             <span className="flex items-center gap-2">
-               <Loader2 className="animate-spin w-5 h-5" /> Designing your trip...
-             </span>
-          ) : (
-             <>Generate My Adventure <Plane className="w-5 h-5" /></>
-          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-[length:200%_auto] animate-gradient"></div>
+          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out skew-x-12"></div>
+          
+          <div className="relative flex justify-center items-center gap-2 z-10">
+            {loading ? (
+               <>
+                 <Loader2 className="animate-spin w-5 h-5" /> 
+                 <span>Orchestrating...</span>
+               </>
+            ) : (
+               <>
+                 <span>Generate Itinerary</span>
+                 <Plane className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+               </>
+            )}
+          </div>
         </button>
       </form>
-    </div>
+    </motion.div>
   );
 };
 

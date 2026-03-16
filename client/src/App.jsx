@@ -3,17 +3,18 @@ import axios from 'axios';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Plane } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import TripForm from './components/TripForm';
 import HistoryList from './components/HistoryList';
 import Itinerary from './components/Itinerary';
 import Footer from './components/Footer';
+import Globe from './components/Globe';
 
 function App() {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const UNSPLASH_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
 
-  // 1. UPDATED STATE: Added 'source'
   const [formData, setFormData] = useState({ 
     source: '', 
     destination: '', 
@@ -63,11 +64,17 @@ function App() {
     setBgImage(newBg);
 
     try {
-      // 2. UPDATED LOGIC: Sending the new formData (including source) to the backend
-      const res = await axios.post(`${API_URL}/api/generate-trip`, formData);
+      // 120-second timeout to handle Render cold starts
+      const res = await axios.post(`${API_URL}/api/generate-trip`, formData, {
+        timeout: 120000 
+      });
       setTrip(res.data);
     } catch (error) {
-      setError("Failed to generate trip. Please try again!");
+      if (error.code === 'ECONNABORTED') {
+        setError("The AI is taking a bit longer to think. Please wait a moment and try again.");
+      } else {
+        setError("Server is waking up or quota reached. Please try again in a minute!");
+      }
     }
     setLoading(false);
   };
@@ -123,29 +130,29 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen relative font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen relative font-sans selection:bg-cyan-500 selection:text-white">
       
-      {/* 🚀 3. UPDATED LOADING OVERLAY: Shows both locations while loading */}
       {loading && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col justify-center items-center text-white">
-           <Plane className="w-20 h-20 text-white animate-bounce" />
+           <Plane className="w-20 h-20 text-cyan-400 animate-bounce" />
            <h2 className="text-3xl font-bold mt-8 text-center px-4">
              Designing your dream trip from {formData.source} to {formData.destination}...
            </h2>
         </div>
       )}
 
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-black/20 z-20"></div>
+      {/* 🖼️ BACKGROUND STACK */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
         <img 
           src={bgImage} 
           alt="Travel Background" 
-          className="w-full h-full object-cover" 
+          className="absolute inset-0 w-full h-full object-cover opacity-40 z-0 transition-opacity duration-1000" 
         />
+        <div className="absolute inset-0 bg-black/70 z-10 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1c] via-transparent to-black/30 z-10 pointer-events-none"></div>
       </div>
 
-      <div className="relative z-30 max-w-5xl mx-auto px-6 pt-10 pb-20">
+      <div className="relative z-30 max-w-7xl mx-auto px-6 pt-6 pb-12">
         <Navbar view={view} setView={setView} fetchHistory={fetchHistory} />
         
         {view === 'history' && (
@@ -154,37 +161,66 @@ function App() {
 
         {view === 'home' && (
           <>
-            {!trip && (
-              <div className="text-center mb-12 animate-fade-in-down">
-                <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 drop-shadow-2xl tracking-tight">
-                  Where will you <br/>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">wander next?</span>
-                </h1>
-                <p className="text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed">
-                  Enter your route and let AI curate your perfect adventure in seconds.
-                </p>
-              </div>
-            )}
-            
-            <TripForm formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} loading={loading} />
-            
-            {error && (
-              <div className="mt-6 bg-red-500/20 backdrop-blur-md border border-red-500/50 text-red-100 p-4 rounded-2xl text-center">
-                {error}
-              </div>
-            )}
+            {!trip ? (
+              // ✨ COMPACT SPLIT-SCREEN LAYOUT
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mt-4 md:mt-8">
+                
+                {/* LEFT SIDE: Heading & Form */}
+                <div className="flex flex-col justify-center relative">
+                  
+                  {/* Breathing Aurora Glow */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-gradient-to-tr from-cyan-500/10 via-indigo-500/10 to-purple-500/10 blur-[80px] rounded-full animate-pulse pointer-events-none z-0"></div>
 
-            {trip && (
-              <Itinerary 
-                trip={trip} 
-                isEditing={isEditing} 
-                setIsEditing={startEditing} 
-                editedPlan={editedPlan} 
-                handleActivityChange={handleActivityChange} 
-                saveChanges={saveChanges} 
-                printRef={printRef} 
-                handleDownloadPDF={handleDownloadPDF} 
-              />
+                  <div className="relative z-10">
+                    <motion.div 
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      className="text-left mb-5"
+                    >
+                      <h1 className="text-4xl md:text-6xl font-black text-white mb-3 tracking-tight leading-tight">
+                        Where will you <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 animate-gradient bg-[length:200%_auto]">wander next?</span>
+                      </h1>
+                      <p className="text-base md:text-lg text-gray-300 max-w-md font-light leading-relaxed">
+                        Enter your route and let AI curate your perfect adventure in seconds.
+                      </p>
+                    </motion.div>
+                    
+                    <TripForm formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} loading={loading} />
+                    
+                    {error && (
+                      <div className="mt-4 bg-red-500/20 backdrop-blur-md border border-red-500/50 text-red-100 p-3 rounded-xl text-left text-sm">
+                        {error}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* RIGHT SIDE: 3D Globe */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1, delay: 0.2 }}
+                  className="relative h-[350px] lg:h-[600px] w-full flex items-center justify-center pointer-events-none"
+                >
+                  <Globe />
+                </motion.div>
+
+              </div>
+            ) : (
+              <div className="mt-8">
+                <Itinerary 
+                  trip={trip} 
+                  isEditing={isEditing} 
+                  setIsEditing={startEditing} 
+                  editedPlan={editedPlan} 
+                  handleActivityChange={handleActivityChange} 
+                  saveChanges={saveChanges} 
+                  printRef={printRef} 
+                  handleDownloadPDF={handleDownloadPDF} 
+                />
+              </div>
             )}
           </>
         )}
