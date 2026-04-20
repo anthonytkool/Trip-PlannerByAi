@@ -1,3 +1,6 @@
+# Trip-PlannerByAi 🤖🌏
+> I forked this amazing starter kit to accelerate the development of my SE Asia Travel AI. By leveraging this solid foundation, I can focus on building the specific AI logic for Thailand/Vietnam tourism.
+
 AI Travel Planner (MERN + Gemini AI)
 An intelligent, full-stack travel planning application that curates personalized itineraries using Generative AI. This project solves real-world travel logistics by calculating routes, discovering transport hubs, and localized budgeting.
 
